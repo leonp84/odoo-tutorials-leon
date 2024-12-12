@@ -1,6 +1,8 @@
 from odoo import api, fields, models
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
+from odoo.exceptions import UserError
+
 
 now = date.today()
 
@@ -25,3 +27,20 @@ class EstatePropertyOffer(models.Model):
         for record in self:
             difference = record.date_deadline - date.today()
             record.validity = difference.days
+    
+
+    def accept_offer(self):
+        for record in self:
+            if self.property_id.state != 'sold':
+                record.status = 'accepted'
+                record.property_id.state = 'sold'
+                record.property_id.selling_price = self.price
+                record.property_id.buyer_id = self.partner_id
+            else:
+                raise UserError("Another offer has already been accepted!")
+        return True
+
+    def refuse_offer(self):
+        for record in self:
+            record.status = 'refused'
+        return True
