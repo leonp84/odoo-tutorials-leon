@@ -9,9 +9,9 @@
                 <field name="postcode" string="Postcode" />
                 <field name="expected_price"/>
                 <field name="bedrooms" string="Bedrooms" />
-                <field name="living_area"/>
+                <field name="living_area" filter_domain="[('living_area', '>=', self)]"/>
                 <field name="facades"/>
-                <filter string="Available" name="state" domain="[
+                <filter string="Available" name="available" domain="[
                         '|',
                         ('state', '=', 'new'),
                         ('state', '=', 'offer received'),
@@ -27,7 +27,7 @@
         <field name="name">estate.property.tree</field>
         <field name="model">estate.property</field>
         <field name="arch" type="xml">
-            <tree string="Channel">
+            <tree string="Channel" decoration-success="bedrooms == 2" decoration-danger="bedrooms == 3" decoration-bf="living_area == 23">
                 <field name="property_type_id"/>
                 <field name="name"/>
                 <field name="postcode"/>
@@ -35,7 +35,7 @@
                 <field name="living_area"/>
                 <field name="expected_price"/>
                 <field name="selling_price"/>
-                <field name="date_availability"/>
+                <field name="date_availability" optional="True" />
                 <field name="tag_ids" widget="many2many_tags"/>
             </tree>
         </field>
@@ -47,20 +47,19 @@
         <field name="arch" type="xml">
             <form string="Lost Reason">
                 <header>
-                    <button name="action_cancel" type="object" string="CANCEL"/>
-                    <button name="action_sold" type="object" string="SOLD"/>
+                    <button name="action_cancel" type="object" string="CANCEL" invisible="False"/>
+                    <button name="action_sold" type="object" string="SOLD" invisible="False"/>
+                    <field name="state" widget="statusbar" statusbar_visible="new,offer received,offer accepted,sold"/>
                 </header>
                 <sheet>
                     <group>
                         <field class="h1 fw-bold mb-2" name="name"/>
-                        <field class="mb-3" name="tag_ids" widget="many2many_tags"/>
+                        <field class="mb-3" name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" />
                     </group>
                     <group>
                         <group>
-                            <field name="state"/>
-                            <field name="property_type_id"/>
+                            <field name="property_type_id" options="{'no_create': true}"/>
                             <field name="postcode"/>
-                            <field name="date_availability"/>
                         </group>
                         <group>
                             <field name="expected_price"/>
@@ -107,13 +106,13 @@
                                         <field name="garden"/>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr invisible="not garden">
                                     <td class="fw-bold">Garden Area (sqm)</td>
                                     <td>
                                         <field name="garden_area"/>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr invisible="not garden">
                                     <td class="fw-bold">Garden Orientation</td>
                                     <td>
                                         <field name="garden_orientation"/>
@@ -129,15 +128,16 @@
                         </page>
                         <page string="Offers">
                             <group>
-                                <field name="offer_ids">
-                                    <tree editable="bottom">
+                                <field name="offer_ids" readonly="state in ('offer accepted', 'sold')">
+                                    <tree editable="bottom" decoration-danger="status == 'refused'" decoration-success="status == 'accepted'">
+                                        <field name="property_type_id" />
                                         <field name="partner_id"/>
                                         <field name="price"/>
                                         <field name="status"/>
                                         <field name="validity"/>
                                         <field name="date_deadline" widget="date"/>
-                                        <button name="accept_offer" title="Accept" type="object" icon="fa-check"/>
-                                        <button name="refuse_offer" title="Refuse" type="object" icon="fa-close"/>
+                                        <button name="accept_offer" title="Accept" type="object" icon="fa-check" invisible="status in ('accepted', 'refused')"/>
+                                        <button name="refuse_offer" title="Refuse" type="object" icon="fa-close" invisible="status in ('accepted', 'refused')"/>
                                     </tree>
                                 </field>
                             </group>
@@ -159,6 +159,7 @@
         <field name="name">Properties</field>
         <field name="res_model">estate.property</field>
         <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_available': True}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
             Warum maak jy nog nie geld nie?

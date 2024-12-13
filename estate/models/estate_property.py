@@ -1,7 +1,7 @@
 from odoo import api, fields, models
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 now = datetime.now()
 new_date = now + relativedelta(months=+3)
@@ -33,6 +33,13 @@ class EstateProperty(models.Model):
     garden = fields.Boolean()
     garden_area = fields.Integer()
     garden_orientation = fields.Selection(selection=[('north', 'North'), ['south', 'South'],['east', 'East'],['west', 'West']])
+
+    _order = "id desc"
+
+    _sql_constraints = [
+        ('check_expected_price_positive', 'CHECK(expected_price >= 0)', 'Expected Price must be 0 or larger'),
+        ('check_selling_price_positive', 'CHECK(selling_price >= 0)', 'Selling Price must be 0 or larger'),
+    ]
 
     total_area = fields.Integer(compute="_compute_total_area")
 
@@ -69,9 +76,15 @@ class EstateProperty(models.Model):
         for record in self:
             for item in record.offer_ids:
                 prices.append(item.price)
-            record.best_price = max(prices)
+            record.best_price = max(prices) if prices else 0
     
     @api.onchange("garden")
     def _onchange_garden(self):
         self.garden_area = 10 if self.garden else 0
         self.garden_orientation = 'north' if self.garden else None
+
+    @api.constrains('selling_price')
+    def _check_selling_price_lowest(self):
+        if self.selling_price != 0:
+            if self.selling_price < (self.expected_price / 100 * 90):
+                raise ValidationError('The Selling Price cannot be 90% lower than the expected price')

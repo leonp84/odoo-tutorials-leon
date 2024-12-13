@@ -17,6 +17,13 @@ class EstatePropertyOffer(models.Model):
 
     partner_id = fields.Many2one("res.partner", required=True)
     property_id = fields.Many2one("estate.property", required=True)
+    property_type_id = fields.Many2one(related="property_id.property_type_id")
+
+    _order = "price desc"
+
+    _sql_constraints = [
+        ('check_offer_price_positive', 'CHECK(price >= 0)', 'Offer Price must be 0 or larger'),
+    ]
 
     @api.depends("validity", "date_deadline")
     def _compute_date_dealine(self):

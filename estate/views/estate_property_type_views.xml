@@ -1,13 +1,39 @@
 <?xml version="1.0"?>
 <odoo>
 
-     <record id="estate_property_type_view_form" model="ir.ui.view">
+    <record id="estate_property_type_tree" model="ir.ui.view">
+        <field name="name">estate.property.type.tree</field>
+        <field name="model">estate.property.type</field>
+        <field name="arch" type="xml">
+            <tree string="Channel">
+                <field name="name"/>
+                <field name="property_ids" string="Properties with Offers" widget="many2many_tags"/>
+                <field name="offer_ids" string="Number of Records"/>
+                <field name="offer_count" string="Number of Offers"/>
+                <field name="sequence" widget="handle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="estate_property_type_view_form" model="ir.ui.view">
         <field name="name">estate.property.type.form</field>
         <field name="model">estate.property.type</field>
         <field name="arch" type="xml">
             <form string="Property Type">
                 <sheet>
                     <field class="h1 fw-bold" name="name"/>
+                    <button type="action" name="%(estate_property_offer_action)d" string="Click for Offers"/>
+                    <notebook>
+                        <page string="Properties">
+                            <field name="property_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="expected_price"/>
+                                    <field name="state"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -20,7 +46,8 @@
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
             Gee vir ons 'n Property Type
-            </p><p>
+            </p>
+            <p>
             VERDUIDELIK!
             </p>
         </field>
