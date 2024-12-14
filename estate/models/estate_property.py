@@ -88,3 +88,9 @@ class EstateProperty(models.Model):
         if self.selling_price != 0:
             if self.selling_price < (self.expected_price / 100 * 90):
                 raise ValidationError('The Selling Price cannot be 90% lower than the expected price')
+
+    @api.ondelete(at_uninstall=False)
+    def cant_do_that(self):
+        for record in self:
+            if record.garden:
+                 raise ValidationError('You can not delete a property with a garden! How cruel ;(')
