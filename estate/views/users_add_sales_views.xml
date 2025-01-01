@@ -1,0 +1,20 @@
+<odoo>
+    <record id="users_model_add_sales_view" model="ir.ui.view">
+        <field name="name">res.users.form</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Property Sales">
+                    <field name="property_ids">
+                        <tree>
+                            <field name="name" />
+                            <field name="postcode"/>
+                            <field name="selling_price"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
